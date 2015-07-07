@@ -5,8 +5,18 @@ import (
 	"fmt"
 )
 
-type QueryValue interface {
-	json.Marshaler
+type QueryHead struct {
+	Query Query
+}
+
+func (qh *QueryHead) MarshalJSON() ([]byte, error) {
+	if nil == qh.Query {
+		return nil, fmt.Errorf("empty query")
+	}
+
+	return json.Marshal(map[string]interface{}{
+		qh.Query.Name(): qh.Query,
+	})
 }
 
 type Query interface {

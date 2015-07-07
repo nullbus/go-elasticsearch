@@ -36,9 +36,9 @@ type Search interface {
 }
 
 type QueryData struct {
-	Query       Query        `json:"query,omitempty"`
-	Aggregation *Aggregation `json:"aggs,omitempty"`
-	Size        *int         `json:"size,omitempty"`
+	Query       *QueryHead  `json:"query,omitempty"`
+	Aggregation Aggregation `json:"aggs,omitempty"`
+	Size        *int        `json:"size,omitempty"`
 }
 
 type DefaultSearch struct {

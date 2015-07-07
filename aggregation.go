@@ -2,66 +2,59 @@ package elasticsearch
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
-type Aggregation struct {
-	Name           string
-	Aggregator     Aggregator
-	SubAggregation *Aggregation
-}
+type Aggregation map[string]Aggregator
 
-func NewAggregation(name string, aggregator Aggregator, sub *Aggregation) *Aggregation {
-	return &Aggregation{name, aggregator, sub}
-}
-
-func (a *Aggregation) MarshalJSON() ([]byte, error) {
-	if nil == a.Aggregator {
-		return nil, fmt.Errorf("empty aggregator")
-	}
-
-	doc := map[string]interface{}{
-		a.Name: map[string]interface{}{
-			a.Aggregator.Name(): a.Aggregator.Aggregate(),
-		},
-	}
-
-	if nil != a.SubAggregation {
-		if a == a.SubAggregation {
-			return nil, fmt.Errorf("cannot aggregate recursive struct")
+func (a Aggregation) MarshalJSON() ([]byte, error) {
+	doc := map[string]map[string]interface{}{}
+	for name, agg := range a {
+		doc[name] = map[string]interface{}{
+			agg.Name(): agg.Aggregate(),
 		}
 
-		doc["aggs"] = a.SubAggregation
+		if pAgg, ok := agg.(ParentAggregator); ok && pAgg.ChildAggregation() != nil {
+			doc[name]["aggs"] = pAgg.ChildAggregation()
+		}
 	}
 
 	return json.Marshal(doc)
 }
 
 type Aggregator interface {
-	Aggregate() json.RawMessage
 	Name() string
+	Aggregate() *json.RawMessage
 }
 
-func aggregateSelf(agg Aggregator) json.RawMessage {
+type ParentAggregator interface {
+	ChildAggregation() Aggregation
+}
+
+func aggregateSelf(agg Aggregator) *json.RawMessage {
 	jsonDoc, jsonErr := json.Marshal(agg)
 	if jsonErr != nil {
-		return json.RawMessage("{}")
+		return nil
 	}
 
-	return json.RawMessage(jsonDoc)
+	return (*json.RawMessage)(&jsonDoc)
 }
 
 type DateHistogramAggregator struct {
-	Field    string   `json:"field"`
-	Interval Duration `json:"interval"`
+	Field          string      `json:"field"`
+	Interval       Duration    `json:"interval"`
+	SubAggregation Aggregation `json:"-"`
 }
 
 func (d *DateHistogramAggregator) Name() string {
 	return "date_histogram"
 }
 
-func (d *DateHistogramAggregator) Aggregate() json.RawMessage {
+func (d *DateHistogramAggregator) Aggregate() *json.RawMessage {
 	return aggregateSelf(d)
+}
+
+func (d *DateHistogramAggregator) ChildAggregation() Aggregation {
+	return d.SubAggregation
 }
 
 type SumAggregator struct {
@@ -73,7 +66,7 @@ func (s *SumAggregator) Name() string {
 	return "sum"
 }
 
-func (s *SumAggregator) Aggregate() json.RawMessage {
+func (s *SumAggregator) Aggregate() *json.RawMessage {
 	return aggregateSelf(s)
 }
 
@@ -88,19 +81,24 @@ func (m *SingleJSONMap) MarshalJSON() ([]byte, error) {
 	})
 }
 
-type TermAggregator struct {
-	Field       string         `json:"field"`
-	MinDocCount int            `json:"min_doc_count,omitempty"`
-	Size        int            `json:"size,omitempty"`
-	Order       *SingleJSONMap `json:"order,omitempty"`
-	Include     string         `json:"include,omitempty"`
-	Exclude     string         `json:"exclude,omitempty"`
+type TermsAggregator struct {
+	Field          string         `json:"field"`
+	MinDocCount    int            `json:"min_doc_count,omitempty"`
+	Size           int            `json:"size,omitempty"`
+	Order          *SingleJSONMap `json:"order,omitempty"`
+	Include        string         `json:"include,omitempty"`
+	Exclude        string         `json:"exclude,omitempty"`
+	SubAggregation Aggregation    `json:"-"`
 }
 
-func (t *TermAggregator) Name() string {
-	return "term"
+func (t *TermsAggregator) Name() string {
+	return "terms"
 }
 
-func (t *TermAggregator) Aggregate() json.RawMessage {
+func (t *TermsAggregator) Aggregate() *json.RawMessage {
 	return aggregateSelf(t)
+}
+
+func (t *TermsAggregator) ChildAggregation() Aggregation {
+	return t.SubAggregation
 }
