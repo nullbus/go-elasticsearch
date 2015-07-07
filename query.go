@@ -31,6 +31,16 @@ const (
 	MATCH_TYPE_PHRASE_PREFIX
 )
 
+type MatchAllQuery struct{}
+
+func (q *MatchAllQuery) Name() string {
+	return "match_all"
+}
+
+func (q *MatchAllQuery) MarshalJSON() ([]byte, error) {
+	return []byte("{}"), nil
+}
+
 type MatchQuery struct {
 	Field    string
 	Query    string
