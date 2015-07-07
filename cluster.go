@@ -1,6 +1,8 @@
 package elasticsearch
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/url"
 )
@@ -28,11 +30,26 @@ func (c *Cluster) Search(search Search) (*http.Response, error) {
 	}
 	url.RawQuery = query.Encode()
 
-	var client http.Client
-	req, createErr := http.NewRequest("GET", url.String(), nil)
+	var (
+		req       *http.Request
+		createErr error
+	)
+
+	body := search.Data()
+	if body == nil {
+		req, createErr = http.NewRequest("GET", url.String(), nil)
+	} else {
+		var buffer bytes.Buffer
+		if err := json.NewEncoder(&buffer).Encode(body); err != nil {
+			return nil, err
+		}
+
+		req, createErr = http.NewRequest("POST", url.String(), &buffer)
+	}
+
 	if nil != createErr {
 		return nil, createErr
 	}
 
-	return client.Do(req)
+	return (&http.Client{}).Do(req)
 }
