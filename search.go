@@ -1,6 +1,7 @@
 package elasticsearch
 
 import (
+	"io"
 	"net/url"
 	"strings"
 )
@@ -30,15 +31,15 @@ func (t SearchType) String() string {
 }
 
 type Search interface {
+	API
 	Type() SearchType
-	Path() string
-	Query() url.Values
 }
 
 type DefaultSearch struct {
 	Indices   []string
 	Types     []string
 	QueryText string
+	QueryData io.Reader
 }
 
 func (s *DefaultSearch) Type() SearchType {
@@ -67,9 +68,12 @@ func (s *DefaultSearch) Path() (path string) {
 }
 
 func (s *DefaultSearch) Query() url.Values {
-	return url.Values{
-		"_q": []string{s.QueryText},
+	ret := url.Values{}
+	if s.QueryData == nil {
+		ret["_q"] = []string{s.QueryText}
 	}
+
+	return ret
 }
 
 type CountSearch DefaultSearch
