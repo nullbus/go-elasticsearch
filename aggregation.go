@@ -11,6 +11,10 @@ type Aggregation struct {
 	SubAggregation *Aggregation
 }
 
+func NewAggregation(name string, aggregator Aggregator, sub *Aggregation) *Aggregation {
+	return &Aggregation{name, aggregator, sub}
+}
+
 func (a *Aggregation) MarshalJSON() ([]byte, error) {
 	if nil == a.Aggregator {
 		return nil, fmt.Errorf("empty aggregator")
@@ -71,4 +75,32 @@ func (s *SumAggregator) Name() string {
 
 func (s *SumAggregator) Aggregate() json.RawMessage {
 	return aggregateSelf(s)
+}
+
+type SingleJSONMap struct {
+	Key   string
+	Value string
+}
+
+func (m *SingleJSONMap) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]string{
+		m.Key: m.Value,
+	})
+}
+
+type TermAggregator struct {
+	Field       string         `json:"field"`
+	MinDocCount int            `json:"min_doc_count,omitempty"`
+	Size        int            `json:"size,omitempty"`
+	Order       *SingleJSONMap `json:"order,omitempty"`
+	Include     string         `json:"include,omitempty"`
+	Exclude     string         `json:"exclude,omitempty"`
+}
+
+func (t *TermAggregator) Name() string {
+	return "term"
+}
+
+func (t *TermAggregator) Aggregate() json.RawMessage {
+	return aggregateSelf(t)
 }

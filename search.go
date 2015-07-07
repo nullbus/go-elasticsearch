@@ -1,7 +1,6 @@
 package elasticsearch
 
 import (
-	"io"
 	"net/url"
 	"strings"
 )
@@ -37,9 +36,9 @@ type Search interface {
 }
 
 type QueryData struct {
-	Query       Query       `json:"query,omitempty"`
-	Aggregation Aggregation `json:"aggs,omitempty"`
-	Size        *int        `json:"size,omitempty"`
+	Query       Query        `json:"query,omitempty"`
+	Aggregation *Aggregation `json:"aggs,omitempty"`
+	Size        *int         `json:"size,omitempty"`
 }
 
 type DefaultSearch struct {
@@ -140,6 +139,6 @@ func (s *ScrollSearch) Query() url.Values {
 	}
 }
 
-func (s *ScrollSearch) Data() io.Reader {
+func (s *ScrollSearch) Data() interface{} {
 	return nil
 }
