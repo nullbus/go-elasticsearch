@@ -43,6 +43,7 @@ type DateHistogramAggregator struct {
 	Field          string      `json:"field"`
 	Interval       Duration    `json:"interval"`
 	SubAggregation Aggregation `json:"-"`
+	Timezone       int         `json:"time_zone"`
 }
 
 func (d *DateHistogramAggregator) Name() string {
@@ -84,7 +85,7 @@ func (m *SingleJSONMap) MarshalJSON() ([]byte, error) {
 type TermsAggregator struct {
 	Field          string         `json:"field"`
 	MinDocCount    int            `json:"min_doc_count,omitempty"`
-	Size           int            `json:"size,omitempty"`
+	Size           *int           `json:"size,omitempty"`
 	Order          *SingleJSONMap `json:"order,omitempty"`
 	Include        string         `json:"include,omitempty"`
 	Exclude        string         `json:"exclude,omitempty"`
@@ -101,4 +102,18 @@ func (t *TermsAggregator) Aggregate() *json.RawMessage {
 
 func (t *TermsAggregator) ChildAggregation() Aggregation {
 	return t.SubAggregation
+}
+
+type TopHitsAggregator struct {
+	From int    `json:"from,omitempty"`
+	Size *int   `json:"size,omitempty"`
+	Sort []Sort `json:"sort,omitempty"`
+}
+
+func (t *TopHitsAggregator) Name() string {
+	return "top_hits"
+}
+
+func (t *TopHitsAggregator) Aggregate() *json.RawMessage {
+	return aggregateSelf(t)
 }

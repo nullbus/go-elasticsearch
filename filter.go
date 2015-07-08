@@ -5,6 +5,10 @@ import (
 	"fmt"
 )
 
+func Size(size int) *int {
+	return &size
+}
+
 type FilteredQuery struct {
 	Filter Filterer
 	Query  Query
