@@ -4,4 +4,4 @@ An [ElasticSearch](https://www.elastic.co) client library written in [Go](http:/
 
 ## install
 
-    go get github.com/nullbux/go-es
+    go get github.com/nullbus/go-es
