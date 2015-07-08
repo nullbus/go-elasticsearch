@@ -32,6 +32,32 @@ func (f *FilteredQuery) MarshalJSON() ([]byte, error) {
 	return json.Marshal(doc)
 }
 
+type FilterAggregaion struct {
+	Filter         Filterer
+	SubAggregation Aggregation
+}
+
+func (f *FilterAggregaion) Name() string {
+	return "filter"
+}
+
+func (f *FilterAggregaion) Aggregate() *json.RawMessage {
+	if f.Filter == nil {
+		emptyJSON := []byte("{}")
+		return (*json.RawMessage)(&emptyJSON)
+	}
+
+	jsonStr, _ := json.Marshal(map[string]interface{}{
+		f.Filter.Name(): f.Filter.Filter(),
+	})
+
+	return (*json.RawMessage)(&jsonStr)
+}
+
+func (f *FilterAggregaion) ChildAggregation() Aggregation {
+	return f.SubAggregation
+}
+
 type Filterer interface {
 	Filter() *json.RawMessage
 	Name() string
