@@ -17,6 +17,11 @@ const (
 	Year   = Duration(365 * Day)
 )
 
+func (d Duration) MarshalJSON() ([]byte, error) {
+	str := `"` + d.String() + `"`
+	return []byte(str), nil
+}
+
 func (d Duration) String() string {
 	if d >= Year {
 		return fmt.Sprintf("%fy", float64(d)/float64(Year))
