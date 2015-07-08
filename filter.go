@@ -120,3 +120,30 @@ func (r *RangeFilter) Filter() *json.RawMessage {
 
 	return (*json.RawMessage)(&jsonStr)
 }
+
+type TermFilter struct {
+	Key          string
+	Value        interface{}
+	DisableCache bool
+}
+
+func (t *TermFilter) Name() string {
+	return "term"
+}
+
+func (t *TermFilter) Filter() *json.RawMessage {
+	doc := map[string]interface{}{
+		t.Key: t.Value,
+	}
+
+	if t.DisableCache {
+		doc["_cache"] = false
+	}
+
+	jsonStr, jsonErr := json.Marshal(doc)
+	if jsonErr != nil {
+		return nil
+	}
+
+	return (*json.RawMessage)(&jsonStr)
+}
