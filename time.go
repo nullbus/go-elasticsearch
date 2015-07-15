@@ -23,24 +23,29 @@ func (d Duration) MarshalJSON() ([]byte, error) {
 }
 
 func (d Duration) String() string {
-	if d >= Year {
-		return fmt.Sprintf("%fy", float64(d)/float64(Year))
-	}
-	if d >= Month {
-		return fmt.Sprintf("%fM", float64(d)/float64(Month))
-	}
-	if d >= Week {
-		return fmt.Sprintf("%fw", float64(d)/float64(Week))
-	}
-	if d >= Day {
-		return fmt.Sprintf("%fd", float64(d)/float64(Day))
-	}
-	if d >= Hour {
-		return fmt.Sprintf("%fh", float64(d)/float64(Hour))
-	}
-	if d >= Minute {
-		return fmt.Sprintf("%fm", float64(d)/float64(Minute))
+	var minusSign string
+	if d < 0 {
+		d, minusSign = -d, "-"
 	}
 
-	return fmt.Sprintf("%fs", float64(d)/float64(Second))
+	if d >= Year {
+		return fmt.Sprintf("%s%fy", minusSign, float64(d)/float64(Year))
+	}
+	if d >= Month {
+		return fmt.Sprintf("%s%fM", minusSign, float64(d)/float64(Month))
+	}
+	if d >= Week {
+		return fmt.Sprintf("%s%fw", minusSign, float64(d)/float64(Week))
+	}
+	if d >= Day {
+		return fmt.Sprintf("%s%fd", minusSign, float64(d)/float64(Day))
+	}
+	if d >= Hour {
+		return fmt.Sprintf("%s%fh", minusSign, float64(d)/float64(Hour))
+	}
+	if d >= Minute {
+		return fmt.Sprintf("%s%fm", minusSign, float64(d)/float64(Minute))
+	}
+
+	return fmt.Sprintf("%s%fs", minusSign, float64(d)/float64(Second))
 }
