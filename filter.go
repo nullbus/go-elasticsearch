@@ -151,3 +151,23 @@ func (t *TermFilter) Filter() *json.RawMessage {
 
 	return (*json.RawMessage)(&jsonStr)
 }
+
+type NotFilter struct {
+	Filterer Filterer
+}
+
+func (n *NotFilter) Name() string {
+	return "not"
+}
+
+func (n *NotFilter) Filter() *json.RawMessage {
+	jsonStr, jsonErr := json.Marshal(map[string]*json.RawMessage{
+		n.Filterer.Name(): n.Filterer.Filter(),
+	})
+
+	if jsonErr != nil {
+		return nil
+	}
+
+	return (*json.RawMessage)(&jsonStr)
+}

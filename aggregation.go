@@ -41,9 +41,11 @@ func aggregateSelf(agg Aggregator) *json.RawMessage {
 
 type DateHistogramAggregator struct {
 	Field          string      `json:"field"`
-	Interval       Duration    `json:"interval"`
+	Interval       Duration    `json:"interval,omitempty"`
 	SubAggregation Aggregation `json:"-"`
-	Timezone       int         `json:"time_zone"`
+	Timezone       int         `json:"time_zone,omitempty"`
+	PreOffset      Duration    `json:"pre_offset,omitempty"`
+	PostOffset     Duration    `json:"post_offset,omitempty"`
 }
 
 func (d *DateHistogramAggregator) Name() string {
